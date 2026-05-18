@@ -396,6 +396,80 @@ def get_account_analytics():
 # =========================================================
 # START SERVER
 # =========================================================
+@app.route("/api/board-analytics", methods=["POST"])
+def board_analytics():
+    try:
+        body = request.get_json()
+
+        token = body.get("token", "").strip()
+        board_id = body.get("board_id", "")
+        start_date = body.get("start_date", "")
+        end_date = body.get("end_date", "")
+
+        result = fetch_board_analytics(
+            board_id,
+            token,
+            start_date,
+            end_date
+        )
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        })
+
+
+@app.route("/api/pin-analytics", methods=["POST"])
+def pin_analytics():
+    try:
+        body = request.get_json()
+
+        token = body.get("token", "").strip()
+        pin_id = body.get("pin_id", "")
+        start_date = body.get("start_date", "")
+        end_date = body.get("end_date", "")
+
+        params = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "metric_types": "IMPRESSION,SAVE,OUTBOUND_CLICK,PIN_CLICK"
+        }
+
+        res = pinterest_get(
+            f"/pins/{pin_id}/analytics",
+            token,
+            params
+        )
+
+        totals = {
+            "IMPRESSION": 0,
+            "SAVE": 0,
+            "OUTBOUND_CLICK": 0,
+            "PIN_CLICK": 0
+        }
+
+        daily = res.get("all", {}).get("daily_metrics", [])
+
+        for day in daily:
+            metrics = day.get("metrics", {})
+            for k in totals:
+                totals[k] += metrics.get(k, 0)
+
+        return jsonify({
+            "ok": True,
+            "analytics": totals
+        })
+
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        })
+
+
 if __name__ == "__main__":
 
     print("\n" + "="*55)
