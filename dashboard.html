@@ -459,7 +459,7 @@ function showPage(id) {
 // API CALLS (to local Flask backend)
 // ══════════════════════════════════════════════════
 async function apiPost(path, body) {
-  const res = await fetch('https://shelving-excess-chute.ngrok-free.dev' + path, {
+  const res = await fetch('window.location.origin' + path, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
