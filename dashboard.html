@@ -459,14 +459,14 @@ function showPage(id) {
 // API CALLS (to local Flask backend)
 // ══════════════════════════════════════════════════
 async function apiPost(path, body) {
-  const res = await fetch('window.location.origin' + path, {
+  const res = await fetch(window.location.origin + path, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
   });
-
+  
   if (!res.ok) {
     throw new Error('Server error ' + res.status + '. Is server.py running?');
   }
