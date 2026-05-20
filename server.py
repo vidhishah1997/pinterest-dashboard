@@ -16,6 +16,7 @@ PINTEREST_API = "https://api.pinterest.com/v5"
 # =========================
 
 def pinterest_get(endpoint, token, params=None):
+
     headers = {
         "Authorization": f"Bearer {token}"
     }
@@ -30,10 +31,14 @@ def pinterest_get(endpoint, token, params=None):
 
     print("REQUEST URL:", r.url)
     print("STATUS:", r.status_code)
-    print("RESPONSE:", r.text)
 
     if r.status_code >= 400:
-        raise Exception(f"Pinterest API Error {r.status_code}: {r.text}")
+        try:
+            error_text = r.text.encode("utf-8", errors="ignore").decode("utf-8")
+        except:
+            error_text = "Pinterest API Error"
+
+        raise Exception(f"Pinterest API Error {r.status_code}: {error_text}")
 
     return r.json()
 
