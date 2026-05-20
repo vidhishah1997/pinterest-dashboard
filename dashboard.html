@@ -466,12 +466,20 @@ async function apiPost(path, body) {
     },
     body: JSON.stringify(body)
   });
-  
-  if (!res.ok) {
-    throw new Error('Server error ' + res.status + '. Is server.py running?');
+
+  let data = {};
+
+  try {
+    data = await res.json();
+  } catch (e) {
+    throw new Error('Invalid server response');
   }
 
-  return res.json();
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.error || ('Server error ' + res.status));
+  }
+
+  return data;
 }
 
 // ══════════════════════════════════════════════════
@@ -533,7 +541,7 @@ async function fetchAllData() {
     // Fetch boards
     const boardsRes = await apiPost('/api/boards', { token: S.token });
     if (!boardsRes.ok) throw new Error(boardsRes.error);
-    const rawBoards = boardsRes.boards;
+    const rawBoards = boardsRes.items || [];
     setProgress(10, `Found ${rawBoards.length} boards. Fetching pins...`);
 
     // Fetch pins + analytics per board
@@ -547,7 +555,7 @@ async function fetchAllData() {
 
       // Pins
       const pinsRes = await apiPost('/api/board-pins', { token: S.token, board_id: b.id });
-      const rawPins = pinsRes.ok ? pinsRes.pins : [];
+      const rawPins = pinsRes.ok ? (pinsRes.items || []) : [];
 
       // Board analytics
       const baRes = await apiPost('/api/board-analytics', { token: S.token, board_id: b.id, start_date: S.startDate, end_date: S.endDate });
